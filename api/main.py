@@ -153,7 +153,16 @@ async def fivetran_webhook(
 ):
     body = await request.body()
 
-    # Verify HMAC-SHA256 signature
+    # Fivetran sends a signature-less ping during webhook registration to verify the URL.
+    # Accept unsigned pings as liveness checks; enforce HMAC on real events.
+    if x_fivetran_signature is None:
+        try:
+            payload = json.loads(body) if body else {}
+        except Exception:
+            payload = {}
+        return {"received": True, "event": payload.get("event", "ping")}
+
+    # Verify HMAC-SHA256 signature on signed events
     try:
         secret = _get_webhook_secret()
     except Exception:
@@ -161,7 +170,7 @@ async def fivetran_webhook(
 
     if secret:
         expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(expected, x_fivetran_signature or ""):
+        if not hmac.compare_digest(expected, x_fivetran_signature):
             raise HTTPException(status_code=401, detail="Invalid webhook signature")
 
     payload = json.loads(body)
