@@ -1,0 +1,13 @@
+{
+  "name": "shipsafe-tidesync",
+  "version": "0.1.0",
+  "description": "ShipSafe Tidesync CLI \u2014 powered by Fivetran",
+  "type": "module",
+  "bin": {
+    "tidesync": "./bin/tidesync.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

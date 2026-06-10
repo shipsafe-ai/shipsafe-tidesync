@@ -25,8 +25,29 @@ def _require_writes() -> None:
 
 
 # ── Read operations ────────────────────────────────────────────────────────────
+#
+# Control-plane reads go through the official Fivetran MCP server first
+# (agent/tools/fivetran_mcp_client.py → fivetran/fivetran-mcp over stdio). If the
+# MCP path is unavailable for any reason, they fall back to direct Fivetran REST so
+# the demo never breaks. USE_FIVETRAN_MCP=false disables the MCP path entirely.
+
+import os as _os
+
+
+def _mcp_enabled() -> bool:
+    return _os.environ.get("USE_FIVETRAN_MCP", "true").lower() == "true"
+
 
 async def list_connections(limit: int = 100) -> list[dict]:
+    if _mcp_enabled():
+        try:
+            from agent.tools import fivetran_mcp_client
+            result = await fivetran_mcp_client.call_tool("list_connections", {"limit": limit})
+            items = fivetran_mcp_client.extract_items(result)
+            if items is not None:
+                return items
+        except Exception:
+            pass  # fall through to REST
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
         resp = await client.get(f"{BASE}/connections", headers=_headers(), params={"limit": limit})
         resp.raise_for_status()
@@ -34,6 +55,17 @@ async def list_connections(limit: int = 100) -> list[dict]:
 
 
 async def get_connection_details(connection_id: str) -> dict:
+    if _mcp_enabled():
+        try:
+            from agent.tools import fivetran_mcp_client
+            result = await fivetran_mcp_client.call_tool(
+                "get_connection_details", {"connection_id": connection_id}
+            )
+            data = fivetran_mcp_client.extract_data(result)
+            if data:
+                return data
+        except Exception:
+            pass  # fall through to REST
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
         resp = await client.get(f"{BASE}/connections/{connection_id}", headers=_headers())
         resp.raise_for_status()

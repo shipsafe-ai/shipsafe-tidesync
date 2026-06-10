@@ -51,17 +51,20 @@ class Orchestrator:
             bq_report=bq_report,
         )
 
-        # 5. Morning briefing
-        briefing = await self.briefing_agent.run(
-            fivetran_reports=fivetran_reports,
-            bq_reports=all_bq_reports,
-            contradiction_report=contradiction,
+        # 5. Critic Layer 2: Gemini adversarially challenges the staleness verdict
+        critic_challenge = await self.critic.challenge_verdict(
+            contradiction=contradiction,
+            fivetran_report=ft_report,
+            bq_report=bq_report,
         )
 
+        # BriefingAgent runs in background (see api/main.py) — not awaited here
         return {
             "needs_recovery": contradiction.get("is_stale", False),
             "connection_id": ft_report.get("connection_id"),
             "contradiction": contradiction,
-            "briefing": briefing,
             "critic_verdict": verdict,
+            "critic_challenge": critic_challenge,
+            "_fivetran_reports": fivetran_reports,
+            "_bq_reports": all_bq_reports,
         }

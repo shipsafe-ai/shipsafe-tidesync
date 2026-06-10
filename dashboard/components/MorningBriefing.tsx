@@ -27,7 +27,7 @@ export function MorningBriefing({ briefing, loading }: Props) {
       </h2>
       {loading ? (
         <p className="text-muted text-xs font-mono">Generating briefing...</p>
-      ) : !briefing || !briefing.summary ? (
+      ) : !briefing || !briefing.summary || !Array.isArray(briefing.anomalies) ? (
         <p className="text-muted text-xs font-mono">No briefing yet.</p>
       ) : (
         <>

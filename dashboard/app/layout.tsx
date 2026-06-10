@@ -4,6 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "TideSync",
   description: "Silent staleness detection for Fivetran + BigQuery pipelines",
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -11,6 +12,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className="dark">
       <body className="bg-bg-base min-h-screen text-zinc-100">
         <header className="border-b border-border px-6 py-4 flex items-center gap-3">
+          <a href="https://shipsafe-landing-o34wppiwiq-uc.a.run.app"
+             className="text-xs font-mono text-muted hover:text-zinc-400 transition-colors"
+             style={{ textDecoration: 'none' }}>
+            ← ShipSafe
+          </a>
+          <span className="text-muted text-xs">·</span>
           <span className="w-2 h-2 rounded-full bg-accent" />
           <span className="font-semibold tracking-tight text-sm">TideSync</span>
           <span className="text-muted text-xs font-mono ml-auto">Fivetran + BigQuery</span>
