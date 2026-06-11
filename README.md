@@ -16,6 +16,8 @@ freshness of the data, and uses Gemini to reason about the contradiction
 between the two — then surfaces a confidence-scored verdict, an SLA breach
 projection, and a recommended fix for a human to approve.
 
+![Without TideSync, Fivetran reports the sync succeeded and dashboards stay green while reports run on stale data; with TideSync, it checks BigQuery's data truth and Gemini flags the contradiction for a human to approve a resync](docs/problem-solution.png)
+
 ## The contradiction that is the product
 
 TideSync triangulates two independent sources of truth and reasons about where
@@ -33,11 +35,15 @@ Gemini concludes:     "Silent staleness. Control plane is
 A successful sync status is not evidence that data is fresh. Only the
 destination knows that. TideSync is the agent that checks.
 
+![Gemini as the brain — the Fivetran control plane and the BigQuery data truth become structured context, the Gemini ImpactMapper emits a contradiction verdict, a Gemini Critic challenges it, and a human approves](docs/gemini-data-flow.png)
+
 ## How it works
 
 TideSync is a multi-agent system. A sequential orchestrator runs five
 specialists plus a two-layer adversarial critic, and never executes a
 remediation without explicit human approval.
+
+![TideSync pipeline — SyncSentinel (Fivetran MCP, control plane) and DataDoctor (BigQuery, data truth) feed the Gemini ImpactMapper and a two-layer Critic; a human approval gate guards the RecoveryAgent resync](docs/architecture-pipeline.png)
 
 ```
 Trigger (POST /run or Fivetran sync_end webhook)
@@ -77,6 +83,8 @@ exceeds the staleness threshold (`STALE_THRESHOLD_SECONDS`, default `3600` =
 1 hour) while the control plane still reports success.
 
 ## Real Model Context Protocol integration (Fivetran)
+
+![System architecture — a Next.js dashboard and a FastAPI agent on Cloud Run, Gemini on Vertex AI, the Fivetran MCP (77 tools) for the control plane and BigQuery for the data truth, with a human approval gate before any Fivetran resync](docs/architecture-overview.png)
 
 TideSync does not just call a REST API. It spawns the **official open-source
 `fivetran/fivetran-mcp` server** (cloned into the container image at
@@ -146,6 +154,7 @@ TideSync ships as the npm package **`shipsafe-tidesync`**:
 npx shipsafe-tidesync health   # check the deployed agent is reachable
 npx shipsafe-tidesync demo      # run the Hormuz crisis scenario against /run
 npx shipsafe-tidesync init      # print agent URL + connection instructions
+npx shipsafe-tidesync connect   # point at your own Fivetran + BigQuery
 ```
 
 To run against your own data, provide a Fivetran connection and a BigQuery
