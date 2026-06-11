@@ -13,7 +13,7 @@ Every data pipeline has a control plane that reports success and a destination t
 
 A successful sync status is **not** evidence that the data is fresh. Only the destination knows that. We built the agent that checks.
 
-![Problem vs solution](problem-solution.png)
+![Problem vs solution](https://raw.githubusercontent.com/shipsafe-ai/shipsafe-tidesync/main/docs/problem-solution.png)
 
 ## What it does
 
@@ -32,11 +32,11 @@ A sequential orchestrator on **Google ADK**, on **Cloud Run**, with **Gemini on 
 
 **System architecture — two planes, control vs truth:**
 
-![System architecture](architecture-overview.png)
+![System architecture](https://raw.githubusercontent.com/shipsafe-ai/shipsafe-tidesync/main/docs/architecture-overview.png)
 
 **The pipeline** — `SyncSentinel + DataDoctor → ImpactMapper (Gemini) → Critic (regex + Gemini) → human gate → RecoveryAgent`:
 
-![Multi-agent pipeline](architecture-pipeline.png)
+![Multi-agent pipeline](https://raw.githubusercontent.com/shipsafe-ai/shipsafe-tidesync/main/docs/architecture-pipeline.png)
 
 ```mermaid
 flowchart TD
@@ -52,7 +52,7 @@ flowchart TD
 
 **Gemini is the brain** — the Fivetran status and the BigQuery lag become structured context, Gemini reasons to a contradiction verdict, and a second Gemini Critic challenges it:
 
-![Gemini reasoning flow](gemini-data-flow.png)
+![Gemini reasoning flow](https://raw.githubusercontent.com/shipsafe-ai/shipsafe-tidesync/main/docs/gemini-data-flow.png)
 
 The Fivetran integration is a **real Model Context Protocol** integration, not a REST wrapper: TideSync spawns the official open-source `fivetran/fivetran-mcp` server as a subprocess and talks to it over **stdio**. Control-plane reads go **MCP-first** with a direct-REST fallback so a live demo never depends on the subprocess. You can verify it live: `GET /mcp/tools` returns `connected: true` and the full tool surface (77 tools as deployed).
 
